@@ -9,6 +9,7 @@ Questo documento descrive la struttura tecnica del progetto, i componenti e il f
 | **Frontend** | Next.js (React) | Ottimo per PWA, routing integrato e SEO (se serve). |
 | **Styling** | Tailwind CSS | Sviluppo rapido di un'interfaccia "kid-friendly" e responsiva. |
 | **Backend** | Next.js API Routes / Serverless | Semplicità di deployment e orchestrazione AI. |
+| **Design / UI** | **Stitch (Google)** | Framework di design assistito da AI per componenti dinamici e reattivi. |
 | **AI (Multimodale)** | Google Gemini 1.5 Flash | Veloce, economico e supporta nativamente input audio/video/immagine. |
 | **Database/Auth** | Supabase | Postgres pronto all'uso, gestione utenti e storage per le foto delle missioni. |
 | **Voice (TTS)** | ElevenLabs / OpenAI TTS | Per dare all'Apprendista una voce calda e non robotica. |
@@ -34,6 +35,12 @@ Un contatore lato server che monitora il tempo di attività. Quando l'energia sc
 4.  **AI:** Analizza: "L'utente ha mostrato un piatto tondo".
 5.  **Apprendista:** "Oh! Quindi un cerchio è tondo come questo piatto? Grazie Maestro!" (TTS + Animazione).
 
-## 4. Sicurezza e Privacy
+## 4. Integrazione MCP (Model Context Protocol)
+Per accelerare lo sviluppo e il design, utilizzeremo lo Stitch MCP. Questo permette all'IA (Fenrir) di:
+- Accedere direttamente al design system.
+- Generare e modificare componenti React in tempo reale basandosi sui feedback.
+- Mantenere la coerenza visiva tra le diverse "emozioni" dell'Apprendista.
+
+## 5. Sicurezza e Privacy
 - **Privacy by Design:** Le foto delle missioni non devono essere usate per il training dell'IA esterna.
 - **Local Storage:** Preferire l'elaborazione locale o l'eliminazione immediata dei media sensibili dopo l'analisi.
