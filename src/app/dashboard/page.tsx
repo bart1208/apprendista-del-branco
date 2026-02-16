@@ -1,6 +1,55 @@
+"use client";
+
 import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
+  const [isThinking, setIsThinking] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleSend = async () => {
+    if (!input.trim() || isThinking) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    setMessages(prev => [...prev, { role: "user", text: userMessage }]);
+    setIsThinking(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userMessage,
+          history: messages.map(m => ({
+            role: m.role === "user" ? "user" : "model",
+            parts: [{ text: m.text }]
+          }))
+        })
+      });
+
+      const data = await response.json();
+      if (data.text) {
+        setMessages(prev => [...prev, { role: "model", text: data.text }]);
+      } else if (data.error) {
+        setMessages(prev => [...prev, { role: "model", text: "Ops, Maestro! " + data.error }]);
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: "model", text: "Maestro, il mio cervello sembra un po' confuso. Riprovi?" }]);
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
     <main className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Sidebar: Pack Knowledge */}
@@ -13,7 +62,6 @@ export default function Dashboard() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {/* Example Knowledge Modules */}
           <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl hover:bg-primary/10 transition-colors cursor-pointer group">
             <div className="flex items-center gap-3 mb-2">
               <span className="material-icons-round text-primary">psychology</span>
@@ -46,10 +94,8 @@ export default function Dashboard() {
 
       {/* Main Area: Orchestration */}
       <section className="flex-1 relative flex flex-col min-w-0 bg-background-light dark:bg-background-dark">
-        {/* Subtle Grid Background */}
         <div className="absolute inset-0 grid-pattern opacity-40 pointer-events-none"></div>
 
-        {/* Top Header */}
         <header className="relative z-10 px-8 py-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
              <span className="text-primary font-black text-xl">BRANCO</span>
@@ -61,32 +107,50 @@ export default function Dashboard() {
           </button>
         </header>
 
-        {/* Robot Visualization */}
-        <div className="flex-1 flex flex-col items-center justify-center relative px-8 pb-32">
-          <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center">
-            {/* Thinking Bubbles / Connections (Conceptual) */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-64 h-64 border-2 border-dashed border-primary/20 rounded-full animate-[spin_20s_linear_infinite]"></div>
-              <div className="absolute top-0 left-1/4 w-4 h-4 bg-accent-yellow rounded-full shadow-lg shadow-accent-yellow/50"></div>
-              <div className="absolute bottom-1/4 right-0 w-3 h-3 bg-primary rounded-full shadow-lg shadow-primary/50"></div>
-            </div>
-
-            {/* The Robot Image */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              alt="Wolf Robot Dashboard" 
-              className="w-full h-full object-contain relative z-10 scale-110 drop-shadow-2xl" 
-              src="/robot-wolf.png" 
-            />
-            
-            {/* Base Shadow */}
-            <div className="absolute bottom-4 w-1/2 h-4 bg-black/10 dark:bg-white/5 rounded-[100%] blur-xl"></div>
-          </div>
+        {/* Interaction Area */}
+        <div className="flex-1 relative flex flex-col overflow-hidden px-4 md:px-8 pb-32">
           
-          <div className="text-center mt-8 relative z-10">
-            <h3 className="text-xl font-bold mb-2">Sono pronto, Maestro.</h3>
-            <p className="text-slate-500 max-w-xs mx-auto text-sm">Cosa vogliamo insegnare al branco oggi?</p>
+          {/* Messages Log (Optional visual hint) */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto pt-4 space-y-4 max-w-2xl mx-auto w-full z-10">
+            <AnimatePresence>
+              {messages.map((msg, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[85%] px-6 py-4 rounded-3xl text-sm font-medium shadow-sm ${
+                    msg.role === 'user' 
+                      ? 'bg-primary text-white rounded-tr-none' 
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-tl-none'
+                  }`}>
+                    {msg.text}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {isThinking && (
+              <div className="flex justify-start">
+                <div className="bg-white dark:bg-slate-800 px-6 py-4 rounded-3xl rounded-tl-none animate-pulse text-xs font-bold text-primary">
+                  IL LUPO STA PENSANDO... 🐺⚙️
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Central Robot (Visual focus when no messages or background) */}
+          {messages.length < 3 && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40">
+               <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-48 h-48 border-2 border-dashed border-primary/20 rounded-full animate-[spin_20s_linear_infinite]"></div>
+                  </div>
+                  <img alt="Robot Wolf" className="w-full h-full object-contain" src="/robot-wolf.png" />
+               </div>
+               <h3 className="text-lg font-bold mt-4">Cosa mi insegni oggi?</h3>
+            </div>
+          )}
         </div>
 
         {/* Bottom Bar: Intent Input */}
@@ -95,10 +159,17 @@ export default function Dashboard() {
             <div className="relative group">
               <input 
                 type="text" 
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Impartisci un ordine o poni una domanda..." 
                 className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-3xl py-6 px-8 pr-20 shadow-2xl focus:outline-none focus:border-primary transition-all text-lg font-medium"
               />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 w-14 h-14 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+              <button 
+                onClick={handleSend}
+                disabled={isThinking}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-14 h-14 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:scale-100"
+              >
                 <span className="material-icons-round text-2xl">send</span>
               </button>
             </div>
