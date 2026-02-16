@@ -43,7 +43,7 @@ export default function Home() {
             <img 
               alt="Friendly minimalist white robot wolf" 
               className="w-full h-full object-contain relative z-10 transition-transform duration-700 hover:scale-105" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6A100XuCMg500YWBHSILhb9nSOgMNY2G0P4VvhUI_jXvSdf5IuBUqK2J97tnUHuvhaDQDkc_xdYTAdcBxGdIEJgasQQsNx48Sx9OYfiTfFlI0nnS_hvNVpwAHeNX5NzwYd23a5PTSCFmsgh939m1m9tVpnK0EF04R3d2p5aH3yYWYBc29a-TPratOHl2LdGSTrNxWqy9KMRe_Hc1BQPyJKh0G9cOLxHlk91hE5H4RfVVpjiTV8dlHd_KntW2NoHcnKGJMdpE-If_LLBdhEAE" 
+              src="/robot-wolf.png" 
             />
             
             {/* Shadow beneath */}
