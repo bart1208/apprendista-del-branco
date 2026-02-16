@@ -25,18 +25,9 @@ export default function Home() {
 
         {/* Character Illustration Area */}
         <div className="flex-1 flex flex-col items-center justify-center relative min-h-[300px]">
-          {/* Decorative Glows */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 md:w-96 h-64 md:h-96 bg-primary/10 rounded-full blur-3xl"></div>
           
           {/* Robot Wolf Container */}
           <div className="relative w-full max-w-[280px] md:max-w-[320px] aspect-square flex items-center justify-center robot-glow">
-            {/* Glowing Ear Antennas */}
-            <div className="absolute top-[15%] left-[30%] -rotate-12 ear-glow z-20">
-              <div className="w-3 md:w-4 h-6 md:h-8 bg-primary rounded-full opacity-80 animate-pulse"></div>
-            </div>
-            <div className="absolute top-[15%] right-[30%] rotate-12 ear-glow z-20">
-              <div className="w-3 md:w-4 h-6 md:h-8 bg-primary rounded-full opacity-80 animate-pulse"></div>
-            </div>
             
             {/* The Robot Image */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
