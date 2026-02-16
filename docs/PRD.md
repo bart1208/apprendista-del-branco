@@ -13,7 +13,7 @@ Un'applicazione web "phygital" progettata per bambini dai 4 ai 7 anni. Il cuore 
 
 ### 3.1 Interfaccia "Mentor-Apprentice"
 - L'IA si presenta come un personaggio (es: un cucciolo di lupo digitale o un robot curioso).
-- **Design assistito da AI:** Utilizzo di **Stitch (Google)** per la generazione e gestione dinamica dei componenti UI.
+- **Design assistito da AI:** Utilizzo di **Stitch (Google)** (Project ID: `2281953920463203152`) per la generazione e gestione dinamica dei componenti UI.
 - Interazione vocale e visuale predominante (testo minimo).
 
 ### 3.2 Modalità di Gioco

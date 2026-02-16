@@ -9,7 +9,7 @@ Questo documento descrive la struttura tecnica del progetto, i componenti e il f
 | **Frontend** | Next.js (React) | Ottimo per PWA, routing integrato e SEO (se serve). |
 | **Styling** | Tailwind CSS | Sviluppo rapido di un'interfaccia "kid-friendly" e responsiva. |
 | **Backend** | Next.js API Routes / Serverless | Semplicità di deployment e orchestrazione AI. |
-| **Design / UI** | **Stitch (Google)** | Framework di design assistito da AI per componenti dinamici e reattivi. |
+- **Design / UI:** **Stitch (Google)** (Project ID: `2281953920463203152`) | Framework di design assistito da AI per componenti dinamici e reattivi. |
 | **AI (Multimodale)** | Google Gemini 1.5 Flash | Veloce, economico e supporta nativamente input audio/video/immagine. |
 | **Database/Auth** | Supabase | Postgres pronto all'uso, gestione utenti e storage per le foto delle missioni. |
 | **Voice (TTS)** | ElevenLabs / OpenAI TTS | Per dare all'Apprendista una voce calda e non robotica. |
