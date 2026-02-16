@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -55,10 +55,10 @@ export default function Home() {
 
         {/* Actions Section */}
         <footer className="mt-12 space-y-4 pb-8">
-          <button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-5 rounded-2xl shadow-xl shadow-primary/25 flex items-center justify-center gap-3 transition-all active:scale-[0.98] cursor-pointer text-lg">
+          <Link href="/dashboard" className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-5 rounded-2xl shadow-xl shadow-primary/25 flex items-center justify-center gap-3 transition-all active:scale-[0.98] cursor-pointer text-lg">
             <span>Inizia l&apos;Avventura</span>
             <span className="material-icons-round">arrow_forward</span>
-          </button>
+          </Link>
           
           <button className="w-full bg-white/40 dark:bg-white/5 border-2 border-slate-200/50 dark:border-white/10 text-slate-600 dark:text-slate-300 font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all hover:bg-white/60 dark:hover:bg-white/10 cursor-pointer">
             <span>Ho già un account</span>
