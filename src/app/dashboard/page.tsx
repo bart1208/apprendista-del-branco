@@ -2,18 +2,25 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getKnowledge, saveKnowledge, KnowledgeItem } from "@/lib/store";
 
 export default function Dashboard() {
   const [mode, setMode] = useState<"chat" | "vision">("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   // Vision state
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+
+  // Load knowledge on mount
+  useEffect(() => {
+    setKnowledge(getKnowledge());
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || isThinking) return;
@@ -39,6 +46,12 @@ export default function Dashboard() {
       const data = await response.json();
       if (data.text) {
         setMessages(prev => [...prev, { role: "model", text: data.text }]);
+        
+        // Logical inference: if the robot says "Ho imparato che..." or similar, save it
+        if (data.text.toLowerCase().includes("imparato") || data.text.toLowerCase().includes("salvato")) {
+           const newItem = saveKnowledge({ type: "fact", content: userMessage });
+           if (newItem) setKnowledge(prev => [newItem, ...prev]);
+        }
       } else if (data.error) {
         setMessages(prev => [...prev, { role: "model", text: "Ops, Maestro! " + data.error }]);
       }
@@ -84,7 +97,7 @@ export default function Dashboard() {
     
     const imageData = canvasRef.current.toDataURL("image/jpeg");
     setIsThinking(true);
-    setMode("chat"); // Return to chat to see the result
+    setMode("chat"); 
 
     try {
       const response = await fetch("/api/vision", {
@@ -96,6 +109,9 @@ export default function Dashboard() {
       const data = await response.json();
       if (data.text) {
         setMessages(prev => [...prev, { role: "model", text: data.text }]);
+        // Save what was seen
+        const newItem = saveKnowledge({ type: "vision", content: `Ho visto: ${data.text.substring(0, 50)}...` });
+        if (newItem) setKnowledge(prev => [newItem, ...prev]);
       }
     } catch (err) {
       setMessages(prev => [...prev, { role: "model", text: "Maestro, non sono riuscito a capire bene cosa mi hai mostrato." }]);
@@ -123,29 +139,48 @@ export default function Dashboard() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl hover:bg-primary/10 transition-colors cursor-pointer group">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="material-icons-round text-primary">psychology</span>
-              <span className="font-bold text-sm uppercase">Logica</span>
+          {/* Dynamic Knowledge List */}
+          <AnimatePresence>
+            {knowledge.map((item) => (
+              <motion.div 
+                key={item.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="p-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-sm"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="material-icons-round text-[10px] text-primary">
+                    {item.type === 'vision' ? 'visibility' : 'auto_awesome'}
+                  </span>
+                  <span className="text-[10px] font-black uppercase text-slate-400">
+                    {item.type === 'vision' ? 'Memoria Visiva' : 'Fatto Imparato'}
+                  </span>
+                </div>
+                <p className="text-[11px] font-medium leading-tight line-clamp-2">{item.content}</p>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {knowledge.length === 0 && (
+            <div className="py-8 text-center px-4">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-loose">
+                Ancora nessuna conoscenza.<br/>Insegna qualcosa al branco!
+              </p>
             </div>
-            <p className="text-xs text-slate-500">I moduli di base per il ragionamento.</p>
-          </div>
-          
-          <div 
-            onClick={() => mode === "vision" ? stopCamera() : startCamera()}
-            className={`p-4 rounded-xl transition-all cursor-pointer border ${mode === 'vision' ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-slate-800/50 border-transparent hover:border-slate-300 dark:hover:border-slate-700'}`}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <span className="material-icons-round">visibility</span>
-              <span className="font-bold text-sm uppercase">Visione</span>
-            </div>
-            <p className={`text-[10px] ${mode === 'vision' ? 'text-white/80' : 'text-slate-500'}`}>
-              {mode === "vision" ? "Spegni la fotocamera" : "Mostrami qualcosa nel mondo reale!"}
-            </p>
-          </div>
+          )}
         </div>
         
         <div className="p-6 border-t border-slate-200 dark:border-slate-800">
+          <div 
+            onClick={() => mode === "vision" ? stopCamera() : startCamera()}
+            className={`p-4 rounded-2xl transition-all cursor-pointer border mb-4 ${mode === 'vision' ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-slate-800/50 border-transparent hover:border-slate-300 dark:hover:border-slate-700'}`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="material-icons-round">visibility</span>
+              <span className="font-bold text-xs uppercase tracking-tighter">Attiva Visione</span>
+            </div>
+          </div>
+
           <div className="bg-slate-900 dark:bg-primary/20 p-4 rounded-2xl">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-bold uppercase text-slate-400">Energia</span>
