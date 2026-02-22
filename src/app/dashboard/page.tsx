@@ -117,16 +117,28 @@ export default function Dashboard() {
     setIsThinking(true);
     setMode("chat"); 
 
+    // Find first incomplete mission as context
+    const activeMission = missions.find(m => !m.completata);
+
     try {
       const response = await fetch("/api/vision", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageData })
+        body: JSON.stringify({ 
+          image: imageData,
+          missionId: activeMission?.id 
+        })
       });
 
       const data = await response.json();
       if (data.text) {
         setMessages(prev => [...prev, { role: "model", text: data.text }]);
+        
+        // Logical check for mission completion in AI response
+        if (activeMission && (data.text.toLowerCase().includes("medaglia") || data.text.toLowerCase().includes("completata"))) {
+            await pb.collection('missioni').update(activeMission.id, { completata: true });
+        }
+
         // Save what was seen
         const newItem = saveKnowledge({ type: "vision", content: `Ho visto: ${data.text.substring(0, 50)}...` });
         if (newItem) setKnowledge(prev => [newItem, ...prev]);
