@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getKnowledge, saveKnowledge, KnowledgeItem } from "@/lib/store";
+import { Mission, getMissions, pb } from "@/lib/pocketbase";
 
 export default function Dashboard() {
   const [mode, setMode] = useState<"chat" | "vision">("chat");
@@ -10,6 +11,7 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
+  const [missions, setMissions] = useState<Mission[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   // Vision state
@@ -17,9 +19,25 @@ export default function Dashboard() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
 
-  // Load knowledge on mount
+  // Load data on mount
   useEffect(() => {
     setKnowledge(getKnowledge());
+    
+    // Initial missions load
+    const loadMissions = async () => {
+      const data = await getMissions();
+      setMissions(data);
+    };
+    loadMissions();
+
+    // Subscribe to mission changes
+    pb.collection('missioni').subscribe('*', function (e) {
+        loadMissions();
+    });
+
+    return () => {
+        pb.collection('missioni').unsubscribe();
+    };
   }, []);
 
   const handleSend = async () => {
@@ -139,6 +157,36 @@ export default function Dashboard() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Active Missions */}
+          {missions.length > 0 && (
+            <div className="mb-6 space-y-3">
+              <div className="px-2 flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-slate-400">Missioni Attive</span>
+                <span className="w-2 h-2 bg-accent-yellow rounded-full animate-pulse"></span>
+              </div>
+              <AnimatePresence>
+                {missions.filter(m => !m.completata).map((mission) => (
+                  <motion.div 
+                    key={mission.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 bg-primary/10 border border-primary/20 rounded-2xl"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                       <span className="material-icons-round text-primary text-sm">
+                          {mission.tipo === 'reale' ? 'explore' : mission.tipo === 'logica' ? 'psychology' : 'auto_stories'}
+                       </span>
+                       <h3 className="text-xs font-black uppercase tracking-tight text-primary">{mission.titolo}</h3>
+                    </div>
+                    <p className="text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+                      {mission.descrizione}
+                    </p>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+
           {/* Dynamic Knowledge List */}
           <AnimatePresence>
             {knowledge.map((item) => (
